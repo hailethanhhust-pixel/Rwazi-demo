@@ -3,6 +3,7 @@ package com.example.rwazihomework.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rwazihomework.domain.model.Note
+import com.example.rwazihomework.domain.model.nextNoteColorHex
 import com.example.rwazihomework.domain.usecase.AddNoteUseCase
 import com.example.rwazihomework.domain.usecase.DeleteNoteUseCase
 import com.example.rwazihomework.domain.usecase.EnsureMinimumDefaultNotesUseCase
@@ -14,7 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 
@@ -103,7 +103,7 @@ class HomeViewModel @Inject constructor(
                 id = UUID.randomUUID().toString(),
                 text = valueToAdd,
                 createdAt = System.currentTimeMillis(),
-                backgroundColorHex = randomVibrantColorHex(
+                backgroundColorHex = nextNoteColorHex(
                     currentItems.map { it.backgroundColorHex }.toSet()
                 )
             )
@@ -176,41 +176,6 @@ class HomeViewModel @Inject constructor(
                 lastPaginationTriggerIndex = -1
             )
         }
-    }
-
-    private fun randomVibrantColorHex(usedColors: Set<String>): String {
-        repeat(24) {
-            val hue = kotlin.random.Random.nextInt(0, 360).toFloat()
-            val saturation = kotlin.random.Random.nextDouble(0.65, 0.95).toFloat()
-            val value = kotlin.random.Random.nextDouble(0.75, 0.98).toFloat()
-            val hex = hsvToHex(hue, saturation, value)
-            if (!usedColors.contains(hex)) {
-                return hex
-            }
-        }
-
-        val hue = kotlin.random.Random.nextInt(0, 360).toFloat()
-        return hsvToHex(hue, 0.75f, 0.85f)
-    }
-
-    private fun hsvToHex(hue: Float, saturation: Float, value: Float): String {
-        val c = value * saturation
-        val x = c * (1f - kotlin.math.abs(((hue / 60f) % 2f) - 1f))
-        val m = value - c
-
-        val (rf, gf, bf) = when {
-            hue < 60f -> Triple(c, x, 0f)
-            hue < 120f -> Triple(x, c, 0f)
-            hue < 180f -> Triple(0f, c, x)
-            hue < 240f -> Triple(0f, x, c)
-            hue < 300f -> Triple(x, 0f, c)
-            else -> Triple(c, 0f, x)
-        }
-
-        val r = ((rf + m) * 255f).toInt().coerceIn(0, 255)
-        val g = ((gf + m) * 255f).toInt().coerceIn(0, 255)
-        val b = ((bf + m) * 255f).toInt().coerceIn(0, 255)
-        return String.format(Locale.US, "#%02X%02X%02X", r, g, b)
     }
 }
 

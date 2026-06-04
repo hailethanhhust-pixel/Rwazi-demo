@@ -1,7 +1,6 @@
 package com.example.rwazihomework.data.repository
 
 import android.content.Context
-import android.graphics.Color as AndroidColor
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -10,16 +9,15 @@ import com.example.rwazihomework.R
 import com.example.rwazihomework.data.local.NoteEntity
 import com.example.rwazihomework.data.local.NotesDatabase
 import com.example.rwazihomework.domain.model.Note
+import com.example.rwazihomework.domain.model.nextNoteColorHex
 import com.example.rwazihomework.domain.repository.NotesRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.random.Random
 
 private val Context.dataStore by preferencesDataStore(name = "home_items")
 private val itemsKey = stringPreferencesKey("items_json")
@@ -75,7 +73,7 @@ class RoomNotesRepository @Inject constructor(
     private suspend fun decodeLegacyDataStore(): List<Note> {
         val raw = context.dataStore.data.first()[itemsKey]
         return LegacyNotesParser.parse(raw) { usedColors ->
-            randomVibrantColorHex(usedColors)
+            nextNoteColorHex(usedColors)
         }
     }
 
@@ -83,7 +81,7 @@ class RoomNotesRepository @Inject constructor(
         val now = System.currentTimeMillis()
         val colors = usedColors.toMutableSet()
         return List(count) { index ->
-            val color = randomVibrantColorHex(colors)
+            val color = nextNoteColorHex(colors)
             colors.add(color)
             Note(
                 id = UUID.randomUUID().toString(),
@@ -92,23 +90,6 @@ class RoomNotesRepository @Inject constructor(
                 backgroundColorHex = color
             )
         }
-    }
-
-    private fun randomVibrantColorHex(usedColors: Set<String>): String {
-        repeat(24) {
-            val hue = Random.nextInt(0, 360).toFloat()
-            val saturation = Random.nextDouble(0.65, 0.95).toFloat()
-            val value = Random.nextDouble(0.75, 0.98).toFloat()
-            val colorInt = AndroidColor.HSVToColor(floatArrayOf(hue, saturation, value))
-            val hex = String.format(Locale.US, "#%06X", 0xFFFFFF and colorInt)
-            if (!usedColors.contains(hex)) {
-                return hex
-            }
-        }
-
-        val hue = Random.nextInt(0, 360).toFloat()
-        val colorInt = AndroidColor.HSVToColor(floatArrayOf(hue, 0.75f, 0.85f))
-        return String.format(Locale.US, "#%06X", 0xFFFFFF and colorInt)
     }
 }
 
