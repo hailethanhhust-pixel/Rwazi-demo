@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Android/Gradle local files
+.gradle/
+local.properties
+
+# Build outputs
+build/
+**/build/
+
+# IDE files
+.idea/
+*.iml
+
+# Logs
+*.log
